@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<!--
+
+Each Framework_Site must have a config.xml. This is loaded up by Framework_Site
+and can be accessed via Framework::$site->config. Feel free to add your own
+configuration stuff here.
+
+-->
+<framework>
+    <!-- 
+        Change this to the appropriate DSN for PEAR's DB class.
+    -->
+    <db>
+        <type>DB</type>
+        <dsn>mysql://root@localhost/framework</dsn>
+    </db>
+
+    <!-- 
+        This MUST be readable/writeable by your web server's user (this is
+        normally nobody/nogroup or www-data/www-data).
+    -->
+    <logFile>/tmp/framework-tests.log</logFile>
+
+    <!--
+        userTable       -   The users table to draw user data from 
+        userField       -   The primary key for userTable
+        defaultUser     -   Create a dummy record and put it's primary key here
+    -->
+    <user>
+        <userTable>users</userTable>
+        <userField>userID</userField> 
+        <defaultUser>1</defaultUser>
+        <!-- 
+            Uncomment this to have Framework_User::singleton() load up your
+            Framework_User_Example class.
+            <userClass>Example</userClass> 
+        -->
+    </user>
+    <!-- See Framework_Auth_ACL -->
+    <!--
+    <acl>
+        <class name="Framework_Module_Home"
+               event="__default"
+               accessLevel="3" />
+    </acl>
+    -->
+</framework>

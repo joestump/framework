@@ -1,0 +1,309 @@
+<html>
+<head>
+  <title>MVC and PHP5 - Part One - The Foundation</title>
+</head>
+<body>
+<h2>Introduction</h2>
+<p>
+This article series demonstrates how to build an MVC web framework using PHP 5.
+This article covers the basics of MVC web frameworks, building the foundation classes for a framework that the other three articles in this series will build. 
+</p>
+<p>
+With the introduction of PHP 5 and its new <acronym title="Object Oriented Programming">OOP</acronym> features devlopers can now seriously talk about building solid API's and more complex <acronym title="Model-View-Controller">MVC</acronym> frameworks for the web in PHP. Not that this wasn't possible before, but the new features in PHP5 make it easier to integrate more advanced features into MVC frameworks, such as SOAP and WSDL.
+</p>
+<h3>What is MVC?</h3>
+<p>
+MVC is the idea that you have three different pieces that work in unison to form a complex application. A car could be good real world example of what MVC is. With a car you have two views: the interior and the exterior. Both take input from the contoller: the driver. The brakes, stearing wheel and other controls represent the model: they take input from the controller (driver) and hand them off to the views (interior/exterior) for presentation.
+</p>
+<h3>MVC on the Web</h3>
+<p>
+The ideas behind MVC frameworks are quite simple and extremely flexible. The idea is that you have a single controller (ie. <code>index.php</code>) that conrols how applications are launched within the framework based on arguments in the request. This usually includes, at a minimum, an argument defining which model to invoke, an event and the usual <code>GET</code> arguments. From there the controller validates the request (authentication, valid model, request sanitization, etc.) and runs the requested event. 
+</p>
+<p>
+For instance a request for <code>/index.php?module=foo&amp;event=bar</code> might load a class called <code>foo</code> and run <code>foo::bar()</code>. The advantages of this method include:
+</p>
+<ol>
+  <li> A single entry point for all of our applications. </li>
+  <li> Removes the headaches involved with maintaining numerous scripts; each with their own relative paths, database connections, authentication, etc.</li>
+  <li> Allows us to consolidate code and promote reusable code.</li>
+</ol>
+<h3>The old way</h3>
+<p>
+If I could go back in time and look at code I wrote in early 2001 I would find a file called <code>template.txt</code> that looked something like the following.
+</p>
+<pre><code>
+&lt;?php
+
+require_once('config.php'); // Other require's, DB info, etc.
+
+$APP_DB = 'mydb';
+$APP_REQUIRE_LOGIN = false; // Set to true if script requires login
+$APP_TEMPLATE_FILE = 'foo.php'; // Smarty template
+$APP_TITLE = 'My Application';
+
+if ($APP_REQUIRE_LOGIN == true) {
+    if (!isset($_SESSION['userID'])) {
+        header("Location: /path/to/login.php");
+        exit();
+    }
+}
+
+$db = DB::connect('mysql://'.$DB_USER.':'.$DB_PASS.'@localhost/'.$APP_DB);
+if (!PEAR::isError($db)) {
+    $db-&gt;setFetchMode(DB_FETCHMODE_ASSOC);
+} else {
+    die($db-&gt;getMessage());
+}
+
+// Put your logic here
+
+// Output the template
+include_once(APP_TEMPLATE_PATH.'/header.php');
+include_once(APP_TEMPLATE_PATH.'/'.$APP_TEMPLATE_FILE);
+include_once(APP_TEMPLATE_PATH.'/footer.php');
+
+?&gt;
+</code></pre>
+<p>
+Oh man, just looking at this code makes me cringe now. The idea with this approach was that every application fit into this set approach and you would just copy <code>template.txt</code> to <code>myapp.php</code>, change some of the variables and then voila it would work. However, this top-down appraoch has seom serious flaws.
+</p>
+<ol>
+  <li> What if my boss wanted me to change <code>myapp.php</code> to output a PDF in some cases, HTML in others and SOAP if XML was posted directly? </li>
+  <li> What if this app required IMAP or LDAP authentication? </li>
+  <li> How would I go about handling various modes in the script (ie. edit, update and delete)?</li>
+  <li> How would I handle multi-level authentication (ie. admin vs. non-admin)? </li>
+  <li> How would I turn on output caching? </li>
+</ol>
+<p>
+By bringing everything into an MVC framework I could make my life a lot easier. Below is an example of an application built using our soon-to-be-built framework.
+</p>
+<h3>The new way</h3>
+<pre><code>
+&lt;?php
+
+class myapp extends FR_Auth_User
+{
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    public function __default()
+    {
+        // Do something here
+    }
+
+    public function delete()
+    {
+
+    }
+
+    public function __destruct()
+    {
+        parent::__destruct();
+    }
+}
+
+?&gt;
+</code></pre>
+<p>
+The thing you should notice about this new way of doing this is that I'm
+not concerning myself with connecting to a database, verifying the user
+is logged in or outputting anything. The controller handles all of this for me.  
+</p>
+<p>
+If I want to authenticate against LDAP I could create FR_Auth_LDAP. The controller could be made to recognize certain output methods (ie. <code>$_GET['output']</code>) and switch to the PDF or SOAP presenter on the fly. The event handler, <code>delete</code>, handles only deleting and nothing else. Since your module has an instance of the <code>FR_User</code> class you can easily check which groups that user is in, etc. Caching, of course, is handled by my template engine, Smarty. Caching could also be handled within the controller.
+</p>
+<p>
+Switching from the old way to the MVC way of doing things can be a completely foreign concept to some people, but once you have switched it's hard to go back. I know I won't be leaving the comforts of my MVC framework anytime soon.
+</p>
+<h2>Intended Audience</h2>
+<p>
+In this article I assume that you have a solid understanding of Object Oriented Programming and that you have at least scanned the upcoming changes to the OOP structure of PHP in PHP5. 
+</p>
+<h2>Creating our Foundation</h2>
+<p>
+I'm a huge fan of <acronym title="PHP Extension and Application Repository">PEAR</acronym> and the <code>PEAR_Error</code> class. PHP5 introduced a new class, <code>Exception</code>, which is almost a drop in replacement for <code>PEAR_Error</code>. However, <code>PEAR_Error</code> has a few extra features that makes it a more robust solution than <code>Exception</code>. As a result, our framework and our foundation classes will use the <code>PEAR_Error</code> class for error handling. I will use <code>Exception</code>, however, to throw errors from the constructors as they cannot return errors. 
+<br /><br />
+Below is a brief overview of the design goals of the foundation classes.
+</p>
+<ol>
+    <li> Leverage PEAR to quickly add functionality to the foundation classes. </li>
+    <li> Create small, reusable abstract foundation classes that will enable developers to quickly build applications within the framework. </li>
+    <li> Document all foundation classes using PHPDcoumentor tags. </li>
+    <li> Prepend all classes and global variables with <code>FR</code> to avoid possible variable/class/function collisions.</li>
+</ol>
+<p>
+The class heirchy will look something like this:
+</p>
+<ul>
+    <li> <code>FR_Object</code> - Will provide basic functionality all objects need (logging, generic <code>setFrom()</code>, <code>toArray()</code>, etc.) </li>
+    <ul>
+        <li> <code>FR_Object_DB</code> - A thin layer to provide child classes a database connection along with other functions such classes might need. </li>
+        <ul>
+          <li> <code>FR_Object_Web</code> - A thing layer that provides session and user information for web based applications. </li>
+          <ul>
+              <li> <code>FR_Module</code> - The base class for all applications (aka "modules", "model", etc.) built in the framework. </li>
+            <ul>
+                <li> <code>FR_Auth</code> - The base authentication class, which will allow for multiple authentication mechanisms. </li>
+                <ul>
+                    <li> <code>FR_Auth_User</code> - An authentication class that will be used in modules that require a valid user is logged in. </li>
+                    <li> <code>FR_Auth_No</code> - A dummy authentication class used for modules that require no authentication. </li>
+                </ul>
+            </ul>
+          </ul>
+        </ul>
+        <li> <code>FR_Presenter</code> - The base presentation class (aka "view") that will handle loading and displaying the applications after they have been ran. </li>
+        <ul>
+            <li> <code>FR_Presenter_smarty</code> - The presentation layer will include the ability to load different drivers. Smarty is a great template class that has built in caching and an active community. </li>
+            <li> <code>FR_Presenter_debug</code> - A debugging presentation layer that developers can use to debug applications. </li>
+            <li> <code>FR_Presenter_rest</code> - A REST presentation layer that developers can use to output applications in XML. </li>
+        </ul>
+    </ul>
+</ul>
+<p>
+Looking at our foundation classes you can start to see the separate parts of the MVC framework. <code>FR_Module</code> will provide for the basic needs of all of our modules (Model), <code>FR_Presenter</code> will provide away to display our applications arbitrarily in different formats (Views). In the next part of this series I will create the controller, which will bring all of our foundation classes together in a single place.
+</p>
+<h2>Coding Standards</h2>
+<p>
+Before you start coding a cohesive framework you might want to sit down with yourself (or your team) and talk about coding standards. The whole idea of MVC programming revolves around reusable and standardized code. A short checklist of things to discuss follows.
+</p>
+<ol>
+  <li> What are your coding standards regarding variable naming and indentation? Don't start a holy war, but hammer out the basics and stick to them, especially when it comes to your foundation classes. </li>
+  <li> Decide on a standard prefix for your functions, classes and global variables. Unfortunately, PHP does not support namespaces. As a result, it might be a good idea to prepend your variables to avoid name collisions and confusion. Throughout this article I will prepend my global variables, functions and classes with <code>FR_</code> so as to distinguish core foundation code from simple application code. </li>
+  <li> I highly recommend using phpDocumentor to document your code as you actually code it. I will document all of the core foundation classes as well as my initial applications in this article. At my own place of employment I run phpDocumentor via a cron job to compile documentation frequently from my code repository.</li>
+</ol>
+<h2>Coding the Foundation</h2>
+<p>
+Now that I'm going to start coding the foundation classes. Be sure to read the comments for my reasonings, ideas and implementation details. What I'm presenting is a combination of things I've done in the past that work for me and a few years of trial and error. By no means is this the only way to program an MVC framework, but it provides a good overview of how things should work.
+</p>
+<h3>Filesystem Layout</h3>
+<p>
+The basic layout will be simplistic and somewhat strictly defined. We will have a directory for includes, which will follow a specific pattern so that we can easily make use of PHP's new <code>__autoload()</code> function. Another directory will be for modules, which will have their own layout. Below is an example of the hierarchy.
+</p>
+<ul>
+  <li><code>/</code></li>
+  <ul>
+    <li><code>config.php</code></li>
+    <li><code>index.php</code></li>
+    <li><code>includes/</code></li>
+    <ul>
+      <li><code>Auth.php</code></li>
+      <li><code>Auth/</code></li>
+      <ul>
+          <li><code>No.php</code></li>
+          <li><code>User.php</code></li>
+      </ul>
+      <li><code>Module.php</code></li>
+      <li><code>Object.php</code></li>
+      <li><code>Object/</code></li>
+      <ul>
+        <li><code>DB.php</code></li>
+      </ul>
+      <li><code>Presenter.php</code></li>
+      <li><code>Presenter/</code></li>
+      <ul>
+          <li><code>common.php</code></li>
+          <li><code>debug.php</code></li>
+          <li><code>smarty.php</code></li>
+      </ul>
+      <li><code>Smarty/</code></li>
+    </ul>
+    <li><code>modules/</code></li>
+    <ul>
+      <li><code>example/</code></li>
+      <ul>
+          <li><code>config.php</code></li>
+          <li><code>example.php</code></li>
+          <li><code>tpl/</code></li>
+          <ul>
+            <li><code>example.tpl</code></li>
+          </ul>
+      </ul>
+    </ul>
+    <li><code>tpl/</code></li>
+    <ul>
+        <li><code>default/</code></li>
+        <ul>
+            <li><code>cache/</code></li>
+            <li><code>config/</code></li>
+            <li><code>templates/</code></li>
+            <li><code>templates_c/</code></li>
+        </ul>
+    </ul>
+  </ul>
+</ul>
+<p>
+You're probably thinking that's a lot of code! I know, but we're going to get through it together. And, when we're done, you'll see that MVC programming will make your life a lot easier and speed up development time.
+</p>
+<p>
+Let's look through the structure above. All of the foundation classes live inside of <code>includes/</code>. An example module has been laid out as well. Each module will have it's own configuration file, at least one module file and one template file. All modules will reside in <code>modules/</code>. I've become accustomed to wrapping my modules in an outer page template, which is what the <code>tpl/</code> directory is for. Each "theme" or template group would have its own template directory. For now, I'm going to use <code>default/</code> as my outer page template. Later on I will create a presentation layer for modules that want to render themselves.
+</p>
+<h3><code>config.php</code></h3>
+<p>
+<code>config.php</code> will provide a centralized location for global configuration variables, such as our <acronym title="Data Source Name">DSN</acronym> and log file location. Also, notice that I dynamically figure out where on the file system our installation is located. This will make installing and migrating your code simple if you use <code>FR_BASE_PATH</code> in your own code.
+</p>
+<pre>
+<code>
+[code for config.php]
+</code>
+</pre>
+<h3><code>index.php</code></h3>
+<p>
+This is the controller. I will cover this in depth in the next part of this four part series.
+</p>
+<h3><code>Object.php</code></h3>
+<p>
+This is the base class for all of our foundation classes. It provides some basic functionality that most, if not all, classes will need. Additionally, the child class <code>FR_Object_DB</code> extends this object and provides a database connection.
+<br /><br />
+The idea is that, by having all children extend from a central object, all of the foundation classes will share certain characteristics. I could put the database connection directly into <code>FR_Object</code>, but not all classes need a database connection. I will talk about <code>FR_Object_DB</code> later.
+</p>
+<pre>
+<code>
+[code for includes/Object.php]
+</code>
+</pre>
+
+<h3><code>Auth.php</code></h3>
+<p>
+This is the base class for authentication. It extends from the <code>FR_Module</code> class that is in <code>Module.php</code>. Its major function is to define what a basic authentication class should look like. 
+<br /><br />
+An argument could be made to rip this out and define it as a variable in the module and then have the controller create the authentication module through a factory pattern, however, for our needs this should serve us well.
+<br /><br />
+The <code>authenticate()</code> function will be overridden in child classes. The controller will use this method when determining if a user has access to the given module or not. For instance, the <code>FR_Auth_No</code>, class simply returns true, which will allow me to create modules that require no authentication.
+</p>
+<pre>
+<code>
+[code for includes/Auth.php]
+</code>
+</pre>
+
+<h3><code>Module.php</code></h3>
+<p>
+This is the heart of all our modules. Since it extends from our <code>FR_Object_DB</code> class it provides our modules, which will be children of this class, with database access and an open log file. 
+<br /><br />
+Additionally, it defines the default presenation layer, the default template file for the module, default page template file and a few other variables that are used by the controller and presentation layer. 
+<br /><br />
+The class also provides the basic structure of what each module must possess as far as functions. The function <code>set()</code> abstracts the method of setting data into a centralized place, which is then handed off to the presentation layer for rendering via the <code>getData()</code> function.
+</p>
+<pre>
+<code>
+[code for includes/Module.php]
+</code>
+</pre>
+
+<h3><code>Presenter.php</code></h3>
+<p>
+This is the foundation for the presentation layer. It uses the factory methodology to create the presentation layer. <code>FR_Module::$presenter</code> defines which presentation layer is to be used, which the controller will then create via the factory method. Once the controller has a valid presentation layer the only thing left to do is to run the common <code>display()</code> function, which is inherited by presentation classes from <code>FR_Presenter_common</code>.
+</p>
+<pre>
+<code>
+[code for includes/Presenter.php]
+</code>
+</pre>
+<h3>Up Next</h3>
+<p>
+So far I have covered why using MVC frameworks make sense and coded the foundation classes. In the next part of this article I will cover the controller. In the third part I will cover the view, or presentation layer as I call it. The final part of this series will cover the creation of our first application built using the framework, the Model.
+</p>
+</body>
+</html>

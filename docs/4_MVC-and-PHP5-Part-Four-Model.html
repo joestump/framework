@@ -1,0 +1,126 @@
+<html>
+<head>
+  <title>MVC and PHP5 - Part Four - The Model</title>
+</head>
+<body>
+<h2>The Model</h2>
+<p>
+The model is where the majority of the logic sits. This is where you run queries agains the database and perform calculations on input. A good example of what a model would look like is a simple login script. The login script will take user input from a form, validate it agains the database and then log the user in.
+<br /><br />
+The first application using the newly created framework will be the <code>users</code> module. I will be creating three models:
+</p>
+<ul>
+    <li> <code>login.php</code> - Takes input from a form and validates it against the database. </li>
+    <li> <code>logout.php</code> - Logs a user out and destroys their session. </li>
+    <li> <code>whoami.php</code> - Similar to the UNIX program of the same name, which will display simple user information. </li>
+</ul>
+<p>
+Because I am introducing the idea of sessions and users into the framework I will need to create a few more foundation classes as well as a table in a database. Before I go over the code of <code>login.php</code> I'd like to walk through these classes.
+</p>
+<h2><code>FR_Session</code></h2>
+<p>
+<code>FR_Session</code> was created to be a wrapper for the built in PHP sessions. The code isn't very involved and is only meant to provide basic support for starting, destroying and writing sessions.
+</p>
+<pre><code>
+[code for includes/Session.php]
+</code></pre>
+<h2><code>FR_User</code></h2>
+<p>
+<code>FR_User</code> is a basic data object for our users table. I created a single table called <code>fr_users</code> in a MySQL database called <code>framework</code>. Below is the table.
+</p>
+<pre><code>
+CREATE TABLE `fr_users` (
+  `userID` int(11) unsigned NOT NULL auto_increment,
+  `email` char(45) NOT NULL default '',
+  `password` char(15) NOT NULL default '',
+  `fname` char(30) NOT NULL default '',
+  `lname` char(30) NOT NULL default '',
+  `posted` datetime NOT NULL default '0000-00-00 00:00:00',
+  `status` enum('active','disabled') default 'active',
+  PRIMARY KEY  (`userID`),
+  UNIQUE KEY `email` (`email`),
+  KEY `posted` (`posted`),
+  KEY `status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Special user for anonymous/not-logged-in users
+INSERT INTO `fr_users` VALUES (0,'anon@example.com','','Anonymous','Coward','2005-06-05 11:33:56','disabled');
+</code></pre>
+<pre><code>
+[code for includes/User.php]
+</code></pre>
+<p>
+One thing you'll notice is that the constructor looks around for userID's in various forms. If a userID is provided to the constructor then the class fetches the given userID. If a userID is not provided then it checks the session for a userID and, if one is not present, assumes the user is not logged in and loads up the special anonymous user record.
+<br /><br />
+The special anonymous user allows me to have a special user for people not logged in. It allows me to easily and quickly check if a user is logged in or not by simply saying:
+</p>
+<pre><code>
+...
+
+  if ($this-&gt;user-&gt;userID &gt; 0) {
+      // User is logged in
+  }
+
+...
+</code></pre>
+<p>
+I would have much rather made <code>FR_User</code> a singleton, however, PHP5 does not allow a child class to have a private constructor when the parent class, <code>FR_Object_DB</code>, has a public constructor. 
+</p>
+<h2><code>FR_Auth_User</code></h2>
+<p>
+Now that I have a session class and a user object I'll need a proper authentication class so that I can restrict applications to users who are logged in. As a result I created a new class called <code>FR_Auth_User</code> and put it into <code>includes/Auth/User.php</code>.
+<br /><br />
+Since my <code>login.php</code> module class will set a session variable called <code>userID</code> to the userID of the person logged in and that value is numerical it becomes quite easy to validate that the user is logged in. The userID of zero is reserved for anonymous surfers who are not logged in, which means that if the userID is greater than zero the person is logged in.
+</p>
+<pre><code>
+[code for includes/Auth/User.php]
+</code></pre>
+<p>
+As you can see my <code>authenticate()</code> method simply checks to make sure the session variable is greater than zero.
+</p>
+<h2><code>login.php</code></h2>
+<p>
+Our first program! I am going to create a simple application that validates a login form. The following files are the minimum requirements for creating a an application in any module. 
+</p>
+<ul>
+    <li> <code>login.php</code> - This is the model. It will house all of the PHP code that validates the user, queries the database and sets the appropriate session variables. </li>
+    <li> <code>login.tpl</code> - This is the Smarty template, which is used by our default presenter. Just a file with our simple HTML form. </li>
+</ul>
+<p>
+For this specific module class I have created the module <code>users</code> in the <code>modules</code> directory. So the module class file will be <code>modules/users/login.php</code> and the template file will be <code>modules/users/tpl/login.tpl</code>.
+</p>
+<pre><code>
+[code for modules/users/tpl/login.php]
+</code></pre>
+<p>
+You're thinking, "I read 8,000 words for this?!" Let's take a closer look at what the framework allows us to do. When my module is loaded and I finally start programming I don't have to worry about creating sessions, connecting to databases, opening log files or authenticating. For once, I don't have to worry that I missed an include file or forgot a snippet of common code. 
+<br /><br />
+This, in a nutshell, is the beauty of MVC programming. Since the controller and views have already been programmed and are in working order you can focus on what you get paid to do, which is create applications. I remember the pain of creating large <code>sed</code> and <code>awk</code> scripts to change database connections, config file locations, etc. I remember having a <code>header.php</code> and a <code>footer.php</code> at the top and bottom of every single script. 
+<br /><br />
+I remember having hundreds of files that ran a function <code>check_user()</code> or something like that. What if I had to change that function name or integrate a different authentication method? If I added another check for a different authentication method then that code/check would be ran in <em>every single file</em> on every request. Now I just create a new <code>FR_Auth_MyAuth</code> and change the applications that need that specific authentication to extend from that auth class.
+</p>
+<h2><code>logout.php</code></h2>
+<p>
+Create yourself a user account in <code>fr_users</code> and go to the login module and login. If you have the <code>mod_rewrite</code> rules turned on then you can simply go to <code>http://example.com/users/login</code>. If you do not then you need to go to <code>http://example.com/index.php?module=users&amp;class=login</code>. Once you have logged in you should be redirected to the homepage, which should now recognize that you are logged in.
+<br /><br />
+Before you click on the link "here", right click on it and copy the link to your clipboard. We'll be using that in a second to demonstrate the authentication. OK, go ahead and click on the link labeled "here", which will log you out (the links assume you have the rewrite rules turned on). 
+<br /><br />
+The logout module should destroy your session and then send you back to the homepage, which should no longer show you are logged in. Now copy and paste the logout URL and try and go to the module again. You should see the error "You do not have access to the requested page!". 
+<br /><br />
+Because the class <code>logout</code> extends from <code>FR_Auth_User</code> it requires that the user be logged in. The function <code>FR_Auth_User::authenticate()</code> checks to make sure <code>$this-&gt;session-&gt;userID</code> is greater than zero. When the controller runs <code>logout::authenticate()</code> (inherited from <code>FR_Auth_User</code>) and a person is not logged in the function returns <code>false</code>, which tells the controller to bomb out.
+</p>
+<h2><code>whoami.php</code></h2>
+<p>
+As a small example of how you can combine the various pieces to the MVC puzzle I created a simple module class called <code>whoami.php</code>. The script simply displays who the user is, however, it checks for a <code>GET</code> argument called <code>output</code>. If <code>output</code> is set to "rest" then the module switches to use the <code>FR_Presenter_rest</code> view, which will output the module's <code>$data</code> variable in valid XML using PEAR's XML_Serializer class.
+</p>
+<pre><code>
+[code for whoami.php]
+</code></pre>
+<h2>Conclusion</h2>
+<p>
+Some people may be thinking that MVC frameworks are "heavy" and that may be, however, my own MVC application has ran websites that regularly receive over 10 <em>million</em> page views a month. If the load gets too heavy I simply turn on caching in my presentation layer.
+<br /><br />
+The gains I have experienced in my development cycles vastly outway the perceived problem of "heaviness". If programmed and documented properly MVC frameworks will reduce the time you spend debugging your code, increase your productivity and greatly reduce the barrier to entry for new/junior programmers.
+</p>
+</body>
+</html>

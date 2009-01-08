@@ -1,0 +1,8 @@
+- Copy index.php to your DocRoot
+- Copy templates to your DocRoot
+- Copy Framework_Config.php to your DocRoot
+- Install Smarty into your path. The Smarty presenter requires that
+  require_once 'Smarty/Smarty.class.php' work.
+- Create a templates/Default/templates_c, templates/Default/config and 
+  Default/cache. Then chmod 777 templates_c and cache.
+- Go to http://www.example.com/?module=Welcome

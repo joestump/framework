@@ -1,0 +1,114 @@
+<html>
+<head>
+  <title>MVC and PHP5 - Part Two - The Controller</title>
+</head>
+<body>
+<p>
+In the first part of this series I covered the basics of MVC programming and created most of the base classes. In part two I will be covering the controller and the presenation layer.
+</p>
+<h2>The Controller</h2>
+<p>
+Quite simply the controller handles incoming requests. It takes input, in our case from the <abbr title="Universal Resource Identifier">URI</abbr>, and uses that input to load a module and refresh/render the presentation layer. The controller for the aptly named Framework 1.0 takes a few <code>GET</code> arguments and uses them to figure out which module to load. 
+<br /><br />
+Before I get to the code let's look at a possible request that our controller is going to have to be able to handle. 
+</p>
+<pre>
+<code>
+http://example.com/index.php?module=login
+</code>
+</pre>
+<p>
+Looks simple enough. However, being that I now run the code inside of a framework things are not as simple as they may first seem. Here is a simple list of arguments that the controller understands and what they do.
+</p>
+<ul>
+  <li> <code>module</code> - This defines the basic module that the user is requesting. For instance, you may choose to create a module named <code>users</code> which stores your code for logging in, logging out and registration.</li>
+  <li> <code>class</code> - This defines the actual class the controller will be loading. For instance, in your <code>users</code> module you might have classes named <code>login</code>, <code>logout</code> and <code>register</code>. If you do not specify a class the controller will attempt to load a class with the same name as the module provided. </li>
+  <li> <code>event</code> - This defines which method will be ran after the controller has authenticated the user. By default the controller will look for and run the <code>__default()</code> method of your class. </li>
+</ul>
+<p>
+Here is a more complex example of what our controller might handle.
+</p>
+<pre>
+<code>
+http://example.com/index.php?module=users&amp;class=login
+</code>
+</pre>
+<p>
+This tells the controller to locate the module <code>users</code>, load the class <code>login</code> and, since no event is defined, run <code>login::__default()</code>.
+</p>
+<h3>The Code</h3>
+<pre>
+<code>
+<!-- index.php -->
+[code for index.php]
+</code>
+</pre>
+<p>
+After looking over the code you might notice a few things. I'm going to walk through the second example URI from above to thoroughly explain things.
+</p>
+<ol>
+  <li> Include <code>config.php</code> </li>
+  <li> Define the <code>__autoload()</code> function. Since all of the classes are named in a structured manner this function can easily include them when they are needed. The <code>__autoload()</code> function is new to PHP5 and provides a method to dynamically load classes as they are needed. This eliminates the need to have the controller require every single library needed to function.</li>
+  <li> If there is a module argument the controller needs to start working on loading the module. The next few lines set up the defaults that I discussed earlier. Once <code>$module</code>, <code>$event</code> and <code>$class</code> are defined the controller can move on to loading the module.</li>
+  <li> The next few lines have to do with loading verifying the requested module and class. The controller loads the module's <code>config.php</code> and the class file, which is <code>users/login.php</code> for our example. Next the controller checks to make sure the required file it needs exists and that the requested class is actually defined. </li>
+  <li> Don't blink! On the next line I use the wonders of <a href="http://us2.php.net/manual/en/functions.variable-functions.php">variable functions</a> to instantiate the module. It's very important that you note that the controller runs the class's constructor <em>before</em> it authenticates the user. Due to the class heirarchy it would be impossible to authenticate before running the constructor. Also, note that the constructor can throw exception, which are new to PHP5, and the controller will handle them appropriately.</li>
+  <li> Now that the controller has a class it runs the inherited method <code>authenticate()</code>, which should return a <code>boolean</code> value. If the function returns <code>true</code> then the controller continues running the module's event handler, if <code>false</code> then the controller exits out. This would be a good place for the controller to redirect to a login form. </li>
+  <li> The next few lines run the given event, which for our example is <code>login::__default()</code>. The event handler can either throw an exception or return a <code>PEAR_Error</code>, which tells the controller that something deadly has happened. </li>
+  <li> Finally, yes finally, it loads the presentation layer based on what the class has defined. By default the <code>FR_Presenter_smarty</code> presentation layer is used. You may not like Smarty, which is fine, you'll just need to create a new presentation class and use that instead. If there isn't anything wrong with the requested presenation layer the controller finally runs the <code>display()</code> method which does the heavy lifting of rendering the module. Notice how I pass the instance of the module class to our presentation layer.</li>
+</ol>
+<p>
+For being under 100 lines of code the controller sure does do a lot! The beauty of MVC programming is that the controller is dumb to what is going on. It's sole purpose is to do simple validation on the request, load up the request and hand off everything to the presentation layer to render the request.
+<br /><br />
+Working within this structure can seem somewhat rigid at first, but once you realize how much more quickly you are able to create large applications and leverage the existing code you can easily work around the perceived rigidity. 
+<br /><br />
+One of the biggest advantages of MVC programming that I have found is that once my foundation is rock solid I rarely ever have to worry about bugs concerning the basics of my site. This allows me to focus more on the application I'm programing and not whether my database connection is working or the user is being properly authenticated. In my own framework I've found that there are files and classes that I haven't touched since first coding them (three years and counting). In addition to reducing the time you spend debugging on mundane features (ie. authentication), working within a framework allows you to add features that propagate downstream and fix bugs in centralized locations.
+</p>
+<h3>Pretty URL's</h3>
+<p>
+Do the URL's in my example make you cringe? They make me cringe too, which is why <code>mod_rewrite</code> exists. Below is an example of some rewrite rules that I created to work with the framework.
+</p>
+<pre>
+<code>
+RewriteEngine On
+
+# Change the URI here to whatever you want your homepage to be
+RewriteRule ^/$ /index.php?module=welcome [L,QSA]
+
+# Changes /index.php?module=welcome to /welcome
+RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_FILENAME} !-d
+RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_FILENAME} !-f
+RewriteRule ^/([^/]*)$ /index.php?module=$1 [L,QSA]
+
+# Changes /index.php?module=users&amp;class=login to /users/login
+RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_FILENAME} !-d
+RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_FILENAME} !-f
+RewriteRule ^/([^/]*)/([^/]*)$ /index.php?module=$1&amp;class=$2 [L,QSA]
+  
+# Changes /index.php?module=users&amp;class=login&amp;event=foo to /users/login/foo.html
+RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_FILENAME} !-d
+RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_FILENAME} !-f
+RewriteRule ^/([^/]*)/([^/]*)/([^/]*).html$ /index.php?module=$1&amp;class=$2&amp;event=$3 [L,QSA]
+</code>
+</pre>
+<p>
+Now those are some pretty URL's! One thing to note is that you do not need to worry about <code>GET</code> arguments with <code>mod_rewrite</code>. It ignores <code>GET</code> arguments and passes them onto the real script.
+</p>
+<h2>Extending the Controller</h2>
+<p>
+The nice thing about having a controller is that you can easily make changes in a single place to add features that will then be instantly available to all of your applications. Outlined below are a number of features that you could easily add to the controller that would ehance the functionality of your applications.
+</p>
+<ul>
+    <li> You could automatically detect if the request is a SOAP request by looking at raw post data. Once you had determined the incoming request was a SOAP request you could use PHP's new <a href="http://us2.php.net/manual/en/function.soap-soapserver-setclass.php"><code>SoapServer</code></a> to turn your module class into a SOAP server. </li>
+    <li> You could also use your controller to sanatize <code>GET</code> and <code>POST</code> input. This would include escaping variables, possibly removing malicous HTML code, etc. The only drawback to this could possibly be that you sanitize data that isn't truly harmful (ie. from an admin form).</li>
+    <li> The controller could be modified to instantly recognize various presentation layers and switch the module class's presentation layer. This means that the presentation layer would look at the request and notice <code>?view=pdf</code> and switch your module class's presentation layer to the PDF presenter instead of the default presenter. </li>
+    <li> You could add caching directly into your controller. That way you could use the URI to create cache files. Obviously, you'd need some additional checking to make sure caching was done intelligently, but this is another great example of why MVC programming makes life easier. If your site is bogged down and you don't have money for new hardware you could, globally in the controller, turn on caching with little effort.</li>
+</ul>
+<p>
+Whatever you decide to do with your controller make sure that the changes are ambiguous enough to be useful for all applications, regardless of what they might be used for. For instance, stripping <em>all</em> HTML from <code>POST</code> input might not be such a good idea as many administrative forms might need to add/edit/update data in the database that contains HTML.
+</p>
+<h2>Up Next</h2>
+<p>
+In the next part of this four part series I will be covering the presentation layer (View). By using the factory method I can easily switch how my applications are presented to the users.
+</p>
+</body>
+</html>

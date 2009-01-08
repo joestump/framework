@@ -1,0 +1,868 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package packagerversion="1.4.5" 
+         version="2.0" 
+         xmlns="http://pear.php.net/dtd/package-2.0" 
+         xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
+                             http://pear.php.net/dtd/tasks-1.0.xsd
+                             http://pear.php.net/dtd/package-2.0
+                             http://pear.php.net/dtd/package-2.0.xsd">
+    <name>Framework</name>
+    <channel>pear.joestump.net</channel>
+    <summary>Light weight MVC framework</summary>
+    <description>
+        Framework is a light weight MVC framework that includes a basic 
+        controller, a few base modules, core classes for creating framework 
+        modules and multiple presentation layers.
+    </description>
+    <lead>
+        <name>Joe Stump</name>
+        <user>jstump</user>
+        <email>jstump@php.net</email>
+        <active>yes</active>
+    </lead>
+    <!-- Begin section which goes in changelog -->
+    <date>2007-12-29</date>
+    <time>15:27:00</time>
+    <version>
+        <release>0.4.0</release>
+        <api>0.4.0</api>
+    </version>
+    <stability>
+        <release>alpha</release>
+        <api>alpha</api>
+    </stability>
+    <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+    <notes><![CDATA[
+    * Switched all PEAR::raiseError(), PEAR_Error, etc. to Framework_Exception. 
+    * Default PEAR_Error handler now throws an appropriate Framework_Exception.
+    * Added ability to use any DB abstraction layer you wish with initial support for DB and MDB2.
+    * Added some initial tests for Framework code.
+    * Set the default for Framework_Module::$tplFile to $module_$class_$event.tpl and similar.
+    * Removed the try/catch block from Framework_Controller_Web::authenticate() - an exception at this level is an indication of a failure in the underlying code, not a failure to log in. (ieure, #43)
+    * Add Framework_Session::__isset() (ieure, #44)
+    * Fixed the check in Framework_User::singleton(), without which “Remember me” functionality cannot work. (ieure, #45)
+    * Fixed the bug in Framework_Presenter_Smarty that was keeping the site template from being appropriately set (bshensky)
+    * Clean up logging, add support for Firebug logging. (ieure, #49)
+    * Clean up whitespace (ieure, #50)
+    * Allow different encodings in RSS presenter (ieure, #51)
+    * Split up Framework_Module::factory() (ieure, #52)
+    * Add the JSON controller to package.xml
+    * Make private members of Framework_Template_Smarty protected. (ieure, #54)
+    ]]></notes>
+    <!-- End section which goes in changelog -->
+    <contents>
+        <dir name="/">
+            <dir name="docs" role="doc">
+                <file baseinstalldir="doc/Framework" 
+                      name="1_MVC-and-PHP5-Part-One-Foundation.html" 
+                      role="doc" />
+                <file baseinstalldir="doc/Framework" 
+                      name="2_MVC-and-PHP5-Part-Two-Controller.html" 
+                      role="doc" />
+                <file baseinstalldir="doc/Framework" 
+                      name="3_MVC-and-PHP5-Part-Three-Presentation.html" 
+                      role="doc" />
+                <file baseinstalldir="doc/Framework" 
+                      name="4_MVC-and-PHP5-Part-Four-Model.html" 
+                      role="doc" />
+                <file baseinstalldir="doc/Framework" 
+                      name="INSTALL" 
+                      role="doc" />
+            </dir> 
+            <dir name="tests">
+                <file name="100-framework-welcome-default.phpt"
+                      role="test" />
+                <file name="101-framework-welcome-showDefaultUser.phpt"
+                      role="test" />
+                <file name="102-framework-welcome-test-default.phpt"
+                      role="test" />
+                <file name="103-framework-welcome-test-anotherTest.phpt"
+                      role="test" />
+                <file name="200-framework-controller-json.phpt"
+                      role="test" />
+                <file name="201-framework-controller-json-exception.phpt"
+                      role="test" />
+                <file name="300-framework-db-db-mysql.phpt"
+                      role="test" />
+                <file name="300-framework-db-db-mysql.xml"
+                      role="test" />
+                <file name="301-framework-db-mdb2-mysql.phpt"
+                      role="test" />
+                <file name="301-framework-db-mdb2-mysql.xml"
+                      role="test" />
+                <file name="tests-config.php"
+                      role="test" />
+                <file name="tests-db-mysql.sql"
+                      role="test" />
+                <dir name="Framework" role="test">
+                    <dir name="Module" role="test">
+                        <file name="Welcome.php"
+                              role="test" />                        
+                        <dir name="Welcome" role="test">
+                            <file name="Foo.php"
+                                  role="test" />
+                            <file name="JSON.php"
+                                  role="test" />
+                            <file name="Test.php"
+                                  role="test" />
+                            <dir name="Admin" role="test">
+                            </dir>
+                            <dir name="Templates" role="test">
+                                <dir name="Default" role="test">
+                                    <file name="Welcome.tpl"
+                                          role="test" />
+                                    <file name="Welcome_Test.tpl"
+                                          role="test" />
+                                    <file name="Welcome_Test_anotherTest.tpl"
+                                          role="test" />
+                                    <file name="Welcome_showDefaultUser.tpl"
+                                          role="test" />
+                                </dir>
+                            </dir>
+                        </dir>
+                    </dir>
+                    <dir name="Site" role="test">
+                        <file name="Tests.php"
+                              role="test" />
+                        <dir name="Tests" role="test">
+                            <file name="config.xml"
+                                  role="test" />
+                            <dir name="Templates" role="test">
+                                <dir name="Default" role="test">
+                                    <dir name="cache" role="test">
+                                        <file name=".keep" role="test" />
+                                    </dir>
+                                    <dir name="config" role="test">
+                                        <file name=".keep" role="test" />
+                                    </dir>
+                                    <dir name="templates" role="test">
+                                        <file name="page.tpl"
+                                              role="test" />
+                                    </dir>
+                                    <dir name="templates_c" role="test">
+                                        <file name=".keep" role="test" />
+                                    </dir>
+                                </dir>
+                            </dir>
+                        </dir>
+                    </dir>
+                </dir>
+            </dir>
+            <dir name="examples" role="doc" baseinstalldir="doc/Framework">
+                <dir name="Framework" role="doc">
+                    <dir name="Module" role="doc">
+                        <dir name="Welcome" role="doc">
+                            <dir name="Admin" role="doc">
+                                <file name=".keep" role="test" />
+                            </dir>
+                            <dir name="Templates" role="doc">
+                                <dir name="Default" rolw="doc">
+                                    <file baseinstalldir="/" 
+                                          name="Welcome.tpl" 
+                                          role="doc" />
+                                </dir>
+                            </dir>
+                        </dir>
+                        <file baseinstalldir="/" 
+                              name="Welcome.php" 
+                              role="doc" />
+                    </dir>
+                    <dir name="Plugin" role="doc">
+                        <file baseinstalldir="/" 
+                              name="Example.php"
+                              role="doc" />
+                    </dir>
+                    <dir name="Site" role="doc">
+                        <dir name="Example" role="doc">
+                            <dir name="Framework" role="doc">
+                                <dir name="Module" role="doc">
+                                    <dir name="Test" role="doc">
+                                        <dir name="Admin" role="doc">
+                                            <file name=".keep" role="doc" /> 
+                                        </dir>
+                                        <dir name="Templates" role="doc">
+                                            <dir name="Default" role="doc">
+                                                <file baseinstalldir="/"
+                                                      name="Test.tpl"
+                                                      role="doc" />
+                                            </dir>
+                                        </dir>
+                                    </dir>
+                                    <file baseinstalldir="/"
+                                          name="Test.php"
+                                          role="doc" />
+                                </dir>
+                            </dir>
+                            <dir name="Templates" role="doc">
+                                <dir name="Default" role="doc">
+                                    <dir name="cache" role="doc">
+                                    </dir>
+                                    <dir name="config" role="doc">
+                                    </dir>
+                                    <dir name="templates" role="doc">
+                                        <file baseinstalldir="/"
+                                              name="page.tpl"
+                                              role="doc" />
+                                    </dir>
+                                    <dir name="templates_c" role="doc">
+                                    </dir>
+                                </dir>
+                            </dir>
+                            <file baseinstalldir="/" 
+                                  name="config.xml" 
+                                  role="doc" />
+                        </dir> 
+                        <file baseinstalldir="/" 
+                              name="Example.php" 
+                              role="doc" />
+                    </dir>
+                </dir>
+                <file baseinstalldir="doc/Framework" 
+                      name="framework.sql" 
+                      role="doc" />
+                <file baseinstalldir="doc/Framework" 
+                      name="index.php" 
+                      role="doc" />
+                <file baseinstalldir="doc/Framework" 
+                      name="htaccess" 
+                      role="doc" />
+            </dir> 
+            <dir name="Framework">
+                <dir name="Auth">
+                    <file baseinstalldir="/" 
+                          name="No.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="User.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="ACL.php" 
+                          role="php" />
+                </dir> 
+                <dir name="Controller">
+                    <file baseinstalldir="/" 
+                          name="Common.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="CLI.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="Web.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="REST.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="JSON.php" 
+                          role="php" />
+                </dir>
+                <dir name="DB">
+                    <file baseinstalldir="/" 
+                          name="Common.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="DB.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="Exception.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="MDB2.php" 
+                          role="php" />
+                </dir>
+                <dir name="Plugin">
+                    <file baseinstalldir="/" 
+                          name="Common.php" 
+                          role="php" />
+                </dir> 
+                <dir name="Module">
+                    <dir name="Framework">
+                        <dir name="Templates">
+                            <dir name="Default">
+                                <file baseinstalldir="/" 
+                                      name="framework_pager.tpl" 
+                                      role="php" />
+                            </dir>
+                        </dir>
+                    </dir>
+                </dir> 
+                <dir name="Object">
+                    <file baseinstalldir="/" 
+                          name="DB.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="Web.php" 
+                          role="php" />
+                </dir> 
+                <dir name="Presenter">
+                    <file baseinstalldir="/" 
+                          name="Common.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="Debug.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="JSON.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="REST.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="Smarty.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="None.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="Module.php" 
+                          role="php" />
+                </dir> 
+                <dir name="Request">
+                    <file baseinstalldir="/" 
+                          name="Common.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="Web.php" 
+                          role="php" />
+               </dir>
+                <dir name="Site">
+                    <file baseinstalldir="/" 
+                          name="Common.php" 
+                          role="php" />
+                </dir>
+                <dir name="Template">
+                    <file baseinstalldir="/" 
+                          name="Interface.php" 
+                          role="php" />
+                    <file baseinstalldir="/" 
+                          name="Smarty.php" 
+                          role="php" />
+                    <dir name="Smarty">
+                        <dir name="plugins">
+                            <file baseinstalldir="/"
+                                  name="resource.framework.php"
+                                  role="php" />
+                            <file baseinstalldir="/"
+                                  name="function.framework_pager.php"
+                                  role="php" />
+                        </dir>
+                    </dir>
+                </dir> 
+                <file baseinstalldir="/" 
+                      name="Auth.php" 
+                      role="php" />
+                <file baseinstalldir="/" 
+                      name="Controller.php" 
+                      role="php" />
+                <file baseinstalldir="/" 
+                      name="DB.php" 
+                      role="php" />
+                <file baseinstalldir="/" 
+                      name="Exception.php" 
+                      role="php" />
+                <file baseinstalldir="/" 
+                      name="Module.php" 
+                      role="php" />
+                <file baseinstalldir="/" 
+                      name="Object.php" 
+                      role="php" />
+                <file baseinstalldir="/"
+                      name="Pager.php"
+                      role="php" />
+                <file baseinstalldir="/" 
+                      name="Plugin.php" 
+                      role="php" />
+                <file baseinstalldir="/" 
+                      name="Presenter.php" 
+                      role="php" />
+                <file baseinstalldir="/" 
+                      name="Request.php" 
+                      role="php" />
+                <file baseinstalldir="/" 
+                      name="Session.php" 
+                      role="php" />
+                <file baseinstalldir="/" 
+                      name="Site.php" 
+                      role="php" />
+                <file baseinstalldir="/" 
+                      name="Template.php" 
+                      role="php" />
+                <file baseinstalldir="/" 
+                      name="User.php" 
+                      role="php" />
+            </dir> 
+            <file baseinstalldir="/" 
+                  name="Framework.php" 
+                  role="php" />
+        </dir> 
+    </contents>
+    <dependencies>
+        <required>
+            <php>
+                <min>5.0</min>
+            </php>
+            <pearinstaller>
+                <min>1.4.0b1</min>
+            </pearinstaller>
+            <package>
+                <name>Smarty</name>
+                <channel>pear.joestump.net</channel>
+                <min>2.6.16</min>
+            </package>
+            <package>
+                <name>Smarty</name>
+                <channel>pearified.com</channel>
+                <min>2.6.8</min>
+                <conflicts/>
+            </package>
+            <package>
+                <name>Validate</name>
+                <channel>pear.php.net</channel>
+                <min>0.5.0</min>
+            </package>
+            <package>
+                <name>DB</name>
+                <channel>pear.php.net</channel>
+                <min>1.7.6</min>
+            </package>
+            <package>
+                <name>Log</name>
+                <channel>pear.php.net</channel>
+                <min>1.8.7</min>
+            </package>
+            <package>
+                <name>XML_Serializer</name>
+                <channel>pear.php.net</channel>
+                <min>0.16.0</min>
+            </package>
+            <package>
+                <name>I18Nv2</name>
+                <channel>pear.php.net</channel>
+                <min>0.11.4</min>
+            </package>
+        </required>
+    </dependencies>
+    <phprelease />
+    <changelog>
+        <release>
+            <date>2007-05-27</date>
+            <time>15:27:00</time>
+            <version>
+                <release>0.2.4</release>
+                <api>0.2.4</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+            * Added Framework_Controller_JSON (see #38)
+            * Fixed #32, #34, #35, #36, #37
+            ]]></notes>
+        </release>
+        <release>
+            <date>2006-07-13</date>
+            <time>00:26:00</time>
+            <version>
+                <release>0.2.3</release>
+                <api>0.1.5</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Fixed #32
+                * Fixed #33
+            ]]></notes>
+        </release>
+        <release>
+            <date>2006-01-10</date>
+            <time>00:26:00</time>
+            <version>
+                <release>0.2.2</release>
+                <api>0.1.5</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Fixed #27
+            ]]></notes>
+        </release>
+        <release>
+		    <date>2006-12-14</date>
+		    <time>15:26:00</time>
+		    <version>
+		        <release>0.2.0</release>
+		        <api>0.1.5</api>
+		    </version>
+		    <stability>
+		        <release>alpha</release>
+		        <api>alpha</api>
+		    </stability>
+		    <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+		    <notes><![CDATA[
+		        * Changed Framework_Presenter_Smarty to use Framework_Template_Smarty
+		        * Closed ticket #4
+		        * Closed ticket #25
+		    ]]></notes>
+        </release>
+        <release>
+            <date>2006-11-28</date>
+            <time>15:26:00</time>
+            <version>
+                <release>0.1.9</release>
+                <api>0.1.5</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Closed ticket #21
+                * Closed ticket #22
+                * Closed ticket #23
+            ]]></notes>
+        </release>
+        <release>
+            <date>2006-11-28</date>
+            <time>15:26:00</time>
+            <version>
+                <release>0.1.8</release>
+                <api>0.1.5</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Closed ticket #14
+                * Closed ticket #17
+                * Closed ticket #18
+                * Fixed Framework_Site_Common::getUriPath() to work with mod_rewrite
+                * Fixed Framework_Template_Smarty to respect template overloading
+                * Added Framework_Request_Web::$lang, Framework_Request_Common::$country and Framework_Request_Common::$locale
+                * Added I18Nv2 as a dependency
+                * Added Framework_Pager
+                * Added check to see if __autoload() already exists
+                * Added framework_pager Smarty plugin
+                * Added __call() to valid event checking so events can be overloaded
+                * Changed ini_get() / ini_set() to get_include_path() / set_include_path()
+                * Changed __autoload() to not die on a failed include
+            ]]></notes>
+        </release>
+        <release>
+            <date>2006-11-09</date>
+            <time>15:26:00</time>
+            <version>
+                <release>0.1.7</release>
+                <api>0.1.5</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Added missing files from 0.1.6 release
+            ]]></notes>
+        </release>
+        <release>
+            <date>2006-11-04</date>
+            <time>20:00:00</time>
+            <version>
+                <release>0.1.6</release>
+                <api>0.1.5</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * If not dsn is set in config.xml do not error out
+                * Added missing files from 0.1.5 release
+            ]]></notes>
+        </release>
+        <release>
+            <date>2006-10-26</date>
+            <time>01:04:00</time>
+            <version>
+                <release>0.1.5</release>
+                <api>0.1.5</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Added Framework_Controller to allow for custom controllers
+                * Added Framework_Request to allow for custom requests
+                * Changed Framework to use Web as the default Controller/Request
+            ]]></notes>
+        </release>
+        <release>
+            <date>2006-10-18</date>
+            <time>01:04:00</time>
+            <version>
+                <release>0.1.4</release>
+                <api>0.1.4</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Added Framework_Exception
+                * Added Framework_Template for unified templating in modules
+                * Added __sleep() and __wakeup() to Framework_Object and Framework_Object_DB
+                * Added $this->template->plugins_dir = array('plugins',$path.'/'.'plugins') to Framework_Presenter_Smarty
+                * Added Framework_Auth_ACL to handle Access Control Lists based on module/event pairings
+                * Added Framework_Request
+                * Added Framework_User::__isset()
+                * Added Framework_Site_Common::stop() which is ran from Framework::stop() when processing has completed
+                * Added config.xml for site configuration data
+                * Added Framework_Presenter_JSON which utilizes php-json (http://www.aurore.net/projects/php-json/)
+                * Fixed a bug when creating custom user classes in Framework_Uset::singleton()
+                * Fixed how Framework_User::__construct() detected the userField from Framework_Session
+                * Fixed misspelled function call in Framework_User
+                * Fixed a bug where Framework_Object was attempting to create a log file before Framework_Site_Common had been created
+                * Fixed mispelled return code in Framework::start()
+                * Fixed a bug where a module's event was running before the session/user had been authenticated
+                * Changed Framework_Presenter_REST to include XMLSerializer options
+                * Changed all Exceptions to Framework_Exception
+                * Changed Framework_Object::__construct() to use Framework_Site_Common::$logFile to create instance of PEAR Log in Framework::$log
+                * Removed a few references to deprecated constants in Framework_Presenter_Module
+                * Deprecated Framework_User::$userTable, Framework_User::$userField, Framework_User::$defaultUser, Framework_User::$userClass (see config.xml)
+            ]]></notes>
+        </release>
+        <release>
+            <date>2006-03-02</date>
+            <time>10:04:00</time>
+            <version>
+                <release>0.1.1</release>
+                <api>0.1.1</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Fixed bug in query logic in Framework_User::__construct()
+                * Added Framework_Auth_User
+                * Added DB::disconnect() to Framework::stop()
+                * Moved DB connection to Framework::$db so static methods can access the DB connection
+            ]]></notes>
+        </release>
+        <release>
+            <date>2006-02-28</date>
+            <time>19:04:00</time>
+            <version>
+                <release>0.1.0</release>
+                <api>0.1.0</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Cleaned up Framework_Session
+                * Changed Framework::run() to Framework::start()
+                * Fixed case sensitive bug in Framework_Module::$presenter
+                * Added multi-site functionality (see Framework_Site class)
+                * Added a plugin framework (see Framework_Plugin class)
+                * Added Framework_Module::factory()
+                * Added Framework_Module::start()
+                * Added Framework_Module::stop()
+                * Added Framework_Module::__shutdown()
+                * Added Framework::stop()
+                * Added Framework::$module for storing running module instance
+                * Added Framework::$site for storing running site instance
+                * Added Framework_User
+                * Added Framework_User::singleton()
+                * Added Framework_Object_Web
+                * Added Framework_Site_Common::getUriPath()
+                * Added check in Framework_Presenter_Smarty::__construct() to check for writeable cache/compile dirs
+                * Added support for custom Framework_User classes
+                * Assign Framework::$site to Smarty templates in Framework_Presenter_Smarty
+                * Deprecated FRAMEWORK_LOG_FILE in Framework_Config.php
+                * Deprecated FRAMEWORK_LOG_DSN in Framework_Config.php
+                * Deprecated FRAMEWORK_USER_TABLE in Framework_User
+                * Deprecated FRAMEWORK_USER_PRIMARY_KEY in Framework_User
+                * Deprecated FRAMEWORK_USER_DEFAULT_USER in Framework_User
+            ]]></notes>
+        </release>
+        <release>
+            <version>
+                <release>0.0.9</release>
+                <api>0.0.9</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Fixed SMARTY_DIR
+                * Fixed templates path in Framework_Presenter_Smarty
+                * Fixed notice in Framework_Session::__get()
+                * Fixed minor bug in FRAMEWORK_URL_FORMAT 
+                * Removed DB::disconnect() from Framework_Object_DB::__destruct()
+                * Removed error suppression from __autoload()
+                * Removed Framework_Presenter_Smarty::$path
+                * Added Framework_Presenter_None 
+                * Added Framework_Presenter_Module
+                * Added support for Framework_Redirect_User() to redirect failed auths
+                * Added more detailed inline documentation 
+                * Added missing PHP5 access delcarations on some functions
+                * Added alternate FRAMEWORK_URL_FORMAT for mod_rewrite
+                * Updated all @license to http://www.opensource.org/licenses/bsd-license.php
+                * Made base Framework class abstract
+                * Made Framework_Presenter class abstract
+            ]]></notes>
+        </release>
+        <release>
+            <date>2005-12-12</date>
+            <time>19:04:00</time>
+            <version>
+                <release>0.0.8</release>
+                <api>0.0.8</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Switched to package.xml version 2.0
+                * Added Smarty dependency
+                * Split Framework_User and Framework_Welcome into separate packages
+            ]]></notes>
+        </release>
+        <release>
+            <date>2005-12-05</date>
+            <time>23:01:12</time>
+            <version>
+                <release>0.0.7</release>
+                <api>0.0.7</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Added extra checking in the controller to make sure people couldn&apos;t access files they shouldn&apos;t be able to access via $_GET args.
+            ]]></notes>
+        </release> 
+        <release>
+            <version>
+                <release>0.0.6</release>
+                <api>0.0.6</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <date>2005-08-20</date>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Added onlamp.com article to the docs
+                * Moved some of the locations of the files within the package
+            ]]></notes> 
+        </release>
+        <release>
+            <version>
+                <release>0.0.5</release>
+                <api>0.0.5</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <date>2005-08-20</date>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Moved templates from examples to data
+            ]]></notes>
+        </release>
+        <release>
+            <version>
+                <release>0.0.4</release>
+                <api>0.0.4</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <date>2005-08-20</date>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Fixed docs path
+                * Fixed require_once statements to conform to PEAR CS
+                * Added docs to controller
+                * Changed Framework::run() to return PEAR_Error instead of dying
+            ]]></notes>
+        </release>
+        <release>
+            <version>
+                <release>0.0.3</release>
+                <api>0.0.3</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <date>2005-08-20</date>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Fixed problem with validating $_GET arguments
+            ]]></notes>
+        </release>
+        <release>
+            <version>
+                <release>0.0.2</release>
+                <api>0.0.2</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <date>2005-08-20</date>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Added FRAMEWORK_DEFAULT_MODULE
+                * Added FRAMEWORK_URL_FORMAT
+                * Changed Smarty require
+            ]]></notes>
+        </release>
+        <release>
+            <version>
+                <release>0.0.1</release>
+                <api>0.0.1</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <date>2005-08-20</date>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+            <notes><![CDATA[
+                * Initial release
+            ]]></notes>
+        </release>
+    </changelog>
+</package>

@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<!-- Framework config.xml file for 300-framework-db-db-mysql.phpt -->
+<framework>
+    <db>
+        <type>MDB2</type>
+        <dsn>mysql://root@localhost/framework</dsn>
+    </db>
+</framework>

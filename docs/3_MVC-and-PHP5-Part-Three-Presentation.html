@@ -1,0 +1,50 @@
+<html>
+<head>
+  <title>MVC and PHP5 - Part Three - The View/Presentation</title>
+</head>
+<body>
+<h2>The Presentation Layer</h2>
+<p>
+The presentation layer, as I call it, is referred to as the "View" in common MVC terminology. It is soley responsible for displaying information. It could care less about authenticating users, what the data is or, for the most part, where it came from. The only thing it has to worry about is how to render it and where to send it once rendered.
+<br /><br />
+By default, the framework uses <a href="http://smarty.php.net">Smarty</a> to render the framework. I'm not here to argue semantics, but your presentation layer should consist of a default template engine of some sort and a few supporting presentation layers. 
+<br /><br />
+The idea is that, after the module is ran, it is handed off to a child of the <code>FR_Presenter_common</code> class, which is created by <code>FR_Presenter::factory()</code>. Each presenter should have a method <code>display()</code> that does the actual rendering. When the presenter is created it is passed the instance of our module class. The presenter then gets the module data using the module class's <code>getData()</code> method. From there the presenter is free to present that data however it sees fit. 
+</p>
+<h3><code>FR_Presenter_smarty</code></h3>
+<p>
+The way I've created my Smarty presenter is a hybrid of two templates. I create a smarty template and the outer page template includes the module's template. The outer template can be defined by the module class's <code>$pageTemplateFile</code>. If it is not defined it defaults to <code>tpl/default/templates/page.tpl</code>. The <code>page.tpl</code> then uses the <code>{$modulePath}</code> and <code>{$tplFile}</code> to include the module's template. All module templates should reside in <code>modules/example/tpl/</code>.
+<br /><br />
+Once the variables have been assigned the controller runs Smarty's display function to render the templates. With little modification you could wrap these calls with Smarty's built in caching as well. By using Smarty you could enable an output modifier to output <code>gzip</code> instead of plain HTML. 
+</p>
+<pre>
+<code>
+<!-- code of includes/Presenter/smarty.php -->
+[code for includes/Presenter/smarty.php]
+</code>
+</pre>
+<h3>Other presenters</h3>
+<p>
+You can create other presenters as well. I've created one called <code>debug.php</code> that simply displays various debugging information. You could change your module class's <code>$presenter</code> to <code>debug</code> and it would render completely differently. 
+<br /><br />
+Additionally you could create a presentation layer called <code>rest.php</code> that simply outputted the module class's <code>$data</code> variable as well-formed <abbr title="eXtensible Markup Language">XML</abbr>. If your module detected a <abbr title="REpresentational State Transfer">REST</abbr> requrest it would switch the presenter by assigning <code>rest</code> to <code>$this-&gt;presetner</code>.
+</p>
+<pre><code>
+[code for includes/Presenter/rest.php]
+</code></pre>
+<p>
+In the REST presentation layer I use the PEAR package <a href="http://pear.php.net/package/XML_Serializer">XML_Serializer</a> to output our <code>FR_Module::$data</code> array as valid XML. It's not extremely intuitive, but it does allow me to output my module in valid XML. I use this REST presenation layer later on in one of my applications.
+</p>
+<h2>Conclusion</h2>
+<p>
+You get the idea. The presentation layer is an extremely flexible way of displaying the module class (Model). To make things even better you can dynamically switch the presenter in the module class before the controller renders the module class via the presentation layer.
+<br /><br />
+Before I move on I'd like to plant the seed for another presentation layer. How about using <code>htmldoc</code> in a presenter named <code>pdf</code> to render your module class as a PDF document?
+</p>
+<h2>Up Next</h2>
+<p>
+In the next part I will be covering the Model portion of the MVC framework, which I have been referring to as "modules" and "module class" up to this point. My example module will be a simple module to log people in and out of the system.
+ After that you'll be on your own to build up my little framework into something useful!
+</p>
+</body>
+</html>

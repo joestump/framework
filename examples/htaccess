@@ -1,0 +1,5 @@
+RewriteEngine On
+RewriteRule ^/?([A-Za-z]+)/([A-Z])([A-Za-z]+)$ /index.php?controller=$1&module=$2$3&%{QUERY_STRING} [L]
+RewriteRule ^/?([A-Za-z]+)/([A-Z][A-Za-z]+)/([a-z][A-Za-z]+)$ /index.php?controller=$1&module=$2&event=$3&%{QUERY_STRING} [L]
+RewriteRule ^/?([A-Za-z]+)/([A-Z][A-Za-z]+)/([A-Z][A-Za-z]+)$ /index.php?controller=$1&module=$2&class=$3&%{QUERY_STRING} [L]
+RewriteRule ^/?([A-Za-z]+)/([A-Z][A-Za-z]+)/([A-Z][A-Za-z]+)/([a-z][A-Za-z]+)$ /index.php?controller=$1&module=$2&class=$3&event=$4&%{QUERY_STRING} [L]
