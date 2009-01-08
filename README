@@ -1,0 +1,10 @@
+Framework sprang forth from an article I wrote on MVC in PHP:
+
+- http://www.onlamp.com/pub/a/php/2005/09/15/mvc_intro.html
+- http://www.onlamp.com/pub/a/php/2005/11/03/mvc_controller.html
+- http://www.onlamp.com/pub/a/php/2006/01/26/mvc_view.html
+- http://www.onlamp.com/pub/a/php/2006/03/02/mvc_model.html
+
+My implementation and article skews the idea of a Model quite a bit, but the
+code is useful in conveying that MVC is applicable in any language. This code
+is not really used nor supported at this point.
